@@ -4,7 +4,10 @@ from llama_index.llms.ollama import Ollama
 from llama_index.readers.file import PyMuPDFReader
 
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, PromptTemplate
+
 from llama_index.core.embeddings import resolve_embed_model
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.core.agent import ReActAgent
 #from llama_index.core.output_parsers import PydanticOutputParser
@@ -15,7 +18,7 @@ from prompts import context
 
 # Get the Ollama LLM instance
 
-llm = Ollama(model="phi3:mini", request_timeout=120.0)
+llm = Ollama(model="llama3:70b", request_timeout=120.0)
 
 
 
@@ -23,22 +26,11 @@ parser = PyMuPDFReader()
 file_extractor = {".pdf": parser}
 documents = SimpleDirectoryReader("./data", file_extractor=file_extractor).load_data()
 
-#parser = LlamaParse(result_type="markdown")
-# file_extractor = {".pdf": parser}
-# documents = SimpleDirectoryReader("./data", file_extractor=file_extractor).load_data()
 
-#this model is cached somewhere else other than this workspace, fix that pathway 
-# #from sentence-transformers environment later
-embed_model = resolve_embed_model("local:dbmdz/bert-base-turkish-uncased")
-"""
-from llama_index.embeddings import HuggingFaceEmbedding
+embed_model = HuggingFaceEmbedding(
+    model_name='dbmdz/bert-base-turkish-uncased',
+    cache_folder='models/')
 
-embedding = HuggingFaceEmbedding(
-    model_name='bert-base-uncased',
-    tokenizer_name='bert-base-uncased',
-    cache_folder='/path/to/your/local/model'
-)"""
-#embed_model = resolve_embed_model("local:BAAI/bge-m3")
 
 vector_index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
 #The simplest way to store your indexed data is to use the built-in .persist()
